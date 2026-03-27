@@ -294,12 +294,20 @@ def _install_menu(project_settings: dict):
         )
         # only add parent if nuke version is 14 or higher
         # known issue with no solution yet
+        def _publish_cmd():
+            import importlib
+            from pharos_nuke.ayon import hooks
+            importlib.reload(hooks)
+            hooks.pre_ayon_publish_hook()
+            # Original Call
+            host_tools.show_publisher(
+                        parent=main_window,
+                        tab="publish"
+                    )
+
         menu.addCommand(
             "Publish...",
-            lambda: host_tools.show_publisher(
-                parent=main_window,
-                tab="publish"
-            )
+            _publish_cmd
         )
 
     menu.addCommand(
