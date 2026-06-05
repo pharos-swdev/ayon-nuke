@@ -127,8 +127,16 @@ def _submit_render_on_farm(node) -> bool:
 
     # Ensure CreateInstance is enabled.
     for instance in create_context.instances:
-        instance.data["active"] = node is instance.transient_data["node"]
+        if not instance.is_mandatory:
+            instance.data["active"] = node is instance.transient_data["node"]
 
+    # Ensure instance is rendering on farm
+    for instance in create_context.instances:
+        if node is instance.transient_data["node"]:
+            instance.data["creator_attributes"]["render_target"]  = "farm"
+
+
+    """
     # Ensure CreateInstance is enabled for current node,
     # and disable other instances.
     for instance in create_context.instances:
@@ -151,6 +159,7 @@ def _submit_render_on_farm(node) -> bool:
                 )
     _show_publisher()
     return
+    """
 
     context = pyblish.api.Context()
     context.data["create_context"] = create_context
