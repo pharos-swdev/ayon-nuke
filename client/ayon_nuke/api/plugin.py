@@ -498,6 +498,11 @@ class NukeWriteCreator(NukeCreator):
                 "render_target"
             ]
         )
+        # set plugin basename on instance data
+        instance_data.update({
+            "plugin_basename": getattr(self, "plugin_basename", None)
+        })
+
         # make sure selected nodes are added
         node_selection = self._get_current_selected_nodes(pre_create_data)
 
