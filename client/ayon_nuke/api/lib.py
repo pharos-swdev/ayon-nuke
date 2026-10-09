@@ -2275,18 +2275,23 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
             # not changed by the colorspace knobs set.
             colorspace_knobs = nuke_imageio_writes["knobs"]
             if node_data:
-                # Legacy avalon knob data has no `creator_identifier` to
-                # find the creator settings (and its exposed knobs) by.
-                all_create_settings = self.project_settings["nuke"]["create"]
-                plugin_names_mapping = {
-                    "create_write_image": "CreateWriteImage",
-                    "create_write_prerender": "CreateWritePrerender",
-                    "create_write_render": "CreateWriteRender"
-                }
                 identifier = node_data["creator_identifier"]
-                creator_settings = all_create_settings[
-                    plugin_names_mapping[identifier]
-                ]
+                plugin_basename = node_data.get("plugin_basename")
+                all_create_settings = self.project_settings["nuke"]["create"]
+                if plugin_basename:
+                    creator_settings = all_create_settings.get(plugin_basename)
+                else:
+                    # Legacy avalon knob data has no `creator_identifier` to
+                    # find the creator settings (and its exposed knobs) by.
+                    plugin_names_mapping = {
+                        "create_write_image": "CreateWriteImage",
+                        "create_write_prerender": "CreateWritePrerender",
+                        "create_write_render": "CreateWriteRender"
+                    }
+                    identifier = node_data["creator_identifier"]
+                    creator_settings = all_create_settings[
+                        plugin_names_mapping[identifier]
+                    ]
                 exposed_knobs = creator_settings.get("exposed_knobs")
                 if exposed_knobs:
                     colorspace_knobs = [
@@ -2619,13 +2624,19 @@ def get_write_node_template_attr(
     node_data = get_node_data(node, INSTANCE_DATA_KNOB)
     identifier = node_data["creator_identifier"]
 
+    # (PHAROS) Only: Resolve plugin basename
+    plugin_basename = (
+        node_data.get("plugin_basename")
+        or plugin_names_mapping[identifier]
+    )
+
     # return template data
     product_name = node_data.get("productName")
     if product_name is None:
         product_name = node_data["subset"]
     return get_imageio_node_setting(
         node_class=node_class,
-        plugin_name=plugin_names_mapping[identifier],
+        plugin_name=plugin_basename,
         product_name=product_name,
         project_settings=project_settings,
     )
